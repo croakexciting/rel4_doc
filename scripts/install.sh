@@ -1,8 +1,19 @@
 #! /usr/bin/env bash
 set -e
 
-export SEL4_PREFIX="/tmp/rust-sel4/"
-export SEL4_INSTALL_DIR="/tmp/rust-sel4/"
+export SEL4_PREFIX="${HOME}/.rust-sel4/"
+export SEL4_INSTALL_DIR="${HOME}/.rust-sel4/"
+INSTALL_MODE="rel4"
+
+function show_usage() {
+	    cat <<EOF
+Usage: $0 [options] ...
+OPTIONS:
+    -h, --help              Display this help and exit.
+    -a, --all               Install all env.
+    -r, --rustsel4          Install rust sel4 runtime.
+EOF
+}
 
 function install_apt() {
     sudo apt update
@@ -34,12 +45,13 @@ function install_qemu_and_toolchain() {
 
     pushd qemu-8.2.5
     # Install riscv64 qemu
+    rm -rf build
     ./configure --target-list=riscv64-softmmu,riscv64-linux-user
     make -j$(nproc)
     sudo make install
+    
     make clean
     rm -rf build
-
     # Install aarch64 qemu
     ./configure --target-list=aarch64-softmmu,aarch64-linux-user
     make -j$(nproc)
@@ -47,7 +59,9 @@ function install_qemu_and_toolchain() {
     popd
 
     # Download riscv unknown toolchain
-    if [ ! command -v riscv64-unknown-linux-gnu-gcc >/dev/null 2>&1 ]; then
+    if ! command -v riscv64-unknown-linux-gnu-gcc >/dev/null 2>&1
+    then
+        rm -rf riscv*
         wget https://github.com/yfblock/rel4-docker/releases/download/toolchain/riscv.tar.gz
         tar xzvf riscv.tar.gz
     fi
@@ -59,17 +73,6 @@ function install_rust() {
         --default-toolchain nightly-2024-09-01 \
         --component rust-src cargo clippy rust-docs rust-src rust-std rustc rustfmt \
         --target aarch64-unknown-none-softfloat riscv64imac-unknown-none-elf
-    
-    # add mirror
-    mkdir -vp ${CARGO_HOME:-$HOME/.cargo}
-
-    cat << EOF | tee -a ${CARGO_HOME:-$HOME/.cargo}/config.toml
-[source.crates-io]
-replace-with = 'ustc'
-
-[source.ustc]
-registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"
-EOF
 }
 
 function install_sel4() {
@@ -88,12 +91,13 @@ function install_sel4() {
                 -B build
         ninja -C build all
         ninja -C build install
+        rm -rf seL4
 }
 
 function install_rustsel4() {
 	local url="https://github.com/seL4/rust-sel4"
 	local rev="1cd063a0f69b2d2045bfa224a36c9341619f0e9b"
-        mkdir -p /tmp/rust-sel4
+        mkdir -p ${SEL4_INSTALL_DIR}
 	local common_args="--git ${url} --rev ${rev} --root ${SEL4_INSTALL_DIR}"
         export CC_aarch64_unknown_none="aarch64-linux-gnu-gcc"
         cargo install ${common_args} sel4-kernel-loader-add-payload
@@ -106,20 +110,63 @@ function install_rustsel4() {
             sel4-kernel-loader;
 }
 
-function main() {
+function install_rel4_runtime() {
     install_apt
     install_pip
     install_qemu_and_toolchain
     install_rust
-    install_sel4
-    install_rustsel4
 
     echo "export PATH=\${PATH}:${HOME}/.local/bin:${HOME}/Downloads/riscv/bin" >> ${HOME}/.bashrc
     echo "source \$HOME/.cargo/env" >> ${HOME}/.bashrc
-    echo "export SEL4_PREFIX=\"/tmp/rust-sel4/\"" >> ${HOME}/.bashrc
-    echo "export SEL4_INSTALL_DIR=\"/tmp/rust-sel4/\"" >> ${HOME}/.bashrc
-    echo "export PATH=\${PATH}:/tmp/rust-sel4/bin" >> ${HOME}/.bashrc
-    source ${HOME}/.bashrc
+}
+
+function install_rust_sel4_runtime() {
+    install_rust
+    install_sel4
+    install_rustsel4
+    echo "export SEL4_PREFIX=\"\${HOME}/.rust-sel4/\"" >> ${HOME}/.bashrc
+    echo "export SEL4_INSTALL_DIR=\"\${HOME}/.rust-sel4/\"" >> ${HOME}/.bashrc
+    echo "export PATH=\${PATH}:\${HOME}/.rust-sel4/bin" >> ${HOME}/.bashrc
+}
+
+function install_all_runtime() {
+    install_rel4_runtime
+    install_rust_sel4_runtime
+}
+
+function parse_cmdline() {
+    if [ "$#" -eq 0 ]; then
+        install_rel4_runtime
+        exit 0
+    fi
+
+    while [ $# -gt 0 ]; do
+        local cmd="$1"
+        shift
+        case "${cmd}" in
+            -a| --all)
+                install_all_runtime
+                exit 0
+                ;;
+            -r| --rustsel4)
+                install_rust_sel4_runtime
+                exit 0
+                ;;                
+            -h | --help)
+                show_usage
+                exit 0
+                ;;
+            -* | --*)
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+}
+
+function main() {
+    parse_cmdline "$@"
+    echo "Don't forget to run source \${HOME}/.bashrc !!"
 }
 
 main "$@"
