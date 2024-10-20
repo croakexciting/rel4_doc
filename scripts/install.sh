@@ -21,7 +21,7 @@ function install_apt() {
         libxml2-utils ncurses-dev curl git doxygen device-tree-compiler u-boot-tools \
         python3-dev python3-pip python-is-python3 protobuf-compiler python3-protobuf \
         gcc-arm-linux-gnueabi g++-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
-        gcc-riscv64-linux-gnu g++-riscv64-linux-gnu repo
+        gcc-riscv64-linux-gnu g++-riscv64-linux-gnu repo wget
 
     sudo apt-get install -y git build-essential gdb-multiarch qemu-system-misc gcc-riscv64-linux-gnu \
         binutils-riscv64-linux-gnu curl autoconf automake autotools-dev curl libmpc-dev libmpfr-dev \
