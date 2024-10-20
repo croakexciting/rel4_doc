@@ -46,7 +46,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:/usr/local/bin/riscv/bin:$PATH \
     RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static \
-    RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup 
+    RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
     sh -s -- -y --no-modify-path --profile minimal --default-toolchain nightly
@@ -56,3 +56,5 @@ RUN curl -L -O https://github.com/yfblock/rel4-docker/releases/download/toolchai
     rm riscv.tar.gz
 
 COPY docker_start_user.sh /usr/local/bin
+
+COPY --from=build_qemu /usr/local/share/qemu/* /usr/local/share/qemu/

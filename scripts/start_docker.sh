@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 IMAGE_NAME="croakexciting/rel4_dev"
-IMAGE_VERSION="0.0.1"
+IMAGE_VERSION="0.0.2"
 CONTAINER_NAME="rel4_dev"
 CURR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
@@ -45,6 +45,7 @@ function main() {
         -e DOCKER_GRP_ID="${gid}" \
         -v $workspace:/workspace \
         -w /workspace \
+        --hostname rel4_dev_env \
         ${IMAGE_NAME}:${IMAGE_VERSION} \
         /bin/bash
     
