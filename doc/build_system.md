@@ -74,3 +74,22 @@ cmake 命令就如最后一行，非常简单， "$@" 可以将我们自定义�
    sel4test 编译
 
 kernel 和 elfloader 的编译我们后面再详细分析，先继续往下看 sel4test 编译
+
+### 2.3 kernel 编译
+
+正如上述所说，sel4_import_kernel() 触发了 kernel 编译。
+
+> 用户空间通过 find_package(seL4 REQUIRED) 查找 kernel CMake module, 在 kernel 中定义了 Findsel4.cmake 文件，因此 find_package(seL4 REQUIRED) 会找到这个文件。这是 cmake module 相关的功能，有兴趣可以进一步了解。
+
+sel4_import_kernel() 定义在 Findsel4 中，通过 find_package(seL4 REQUIRED) 引入 sel4test CMakeLists。这个函数中通过
+
+```
+macro(sel4_import_kernel)
+    add_subdirectory(${KERNEL_PATH} ${CMAKE_BINARY_DIR}/kernel)
+endmacro()
+```
+
+调用 kernel CMakeLists.txt，其实就是和 Findsel4.cmake 同文件夹的那个文件。这个 CMakeLists 内容很多且关键，定义了 kernel 编译，需要找寻其中的关键点
+
+1. 如何编译
+
