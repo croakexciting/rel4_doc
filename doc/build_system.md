@@ -91,17 +91,17 @@ endmacro()
 
 调用 kernel CMakeLists.txt，其实就是和 Findsel4.cmake 同文件夹的那个文件。这个 CMakeLists 内容很多且关键，定义了 kernel 编译，需要找寻其中的关键点
 
-1. 确认工具位置，                               line 18~40
-2. 根据 CPU Arch 做一些配置                     line 49~143
-3. 增加一些 common compile flag                 line 145~257
-4. 增加一些 CPU Arch relative compile flag      line 269~309
-5. 增加 kernel include_directories              line 317~331
-6. 增加 libsel4 include_directories，看起来 kernel 和 app 都依赖 libsel4   line 340~346
-7. Config include generation，这部分存疑，需要确认 rel4 是否依赖这些生成的头文件 line 352~368
-8. C 源文件生成                                 line 386~394
-9. 各种头文件生成，需要进一步分析                  line 405~611
-10. kernel 编译                                 line 623~679
-11. install                                     line 693~end
+1. 确认工具位置 -------------------------------- line 18~40
+2. 根据 CPU Arch 做一些配置 -------------------- line 49~143
+3. 增加一些 common compile flag --------------- line 145~257
+4. 增加一些 CPU Arch relative compile flag ----- line 269~309
+5. 增加 kernel include_directories ------------- line 317~331
+6. 增加 libsel4 include_directories，看起来 kernel 和 app 都依赖 libsel4 ------- line 340~346
+7. Config include generation，这部分存疑，需要确认 rel4 是否依赖这些生成的头文件 -- line 352~368
+8. C 源文件生成 -------------------------------- line 386~394
+9. 各种头文件生成，需要进一步分析 ---------------- line 405~611
+10. kernel 编译 ------------------------------- line 623~679
+11. install ----------------------------------- line 693~end
 
 ### 2.4 用户空间编译
 
